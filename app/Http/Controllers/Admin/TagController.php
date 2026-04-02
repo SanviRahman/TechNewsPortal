@@ -10,11 +10,6 @@ use Illuminate\View\View;
 
 class TagController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:Super Admin|Editor']);
-        $this->middleware('permission:tags.manage');
-    }
 
     public function index(Request $request): View
     {

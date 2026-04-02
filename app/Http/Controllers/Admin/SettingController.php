@@ -11,10 +11,7 @@ use Illuminate\View\View;
 
 class SettingController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'active', 'role:Super Admin']);
-    }
+   
 
     public function index(Request $request): View
     {

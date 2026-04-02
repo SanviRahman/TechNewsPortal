@@ -10,11 +10,7 @@ use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:Super Admin|Editor']);
-        $this->middleware('permission:categories.manage');
-    }
+   
 
     public function index(Request $request): View
     {

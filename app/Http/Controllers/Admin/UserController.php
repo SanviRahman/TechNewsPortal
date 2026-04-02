@@ -13,10 +13,6 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:Super Admin']);
-    }
 
     public function index(Request $request): View
     {
