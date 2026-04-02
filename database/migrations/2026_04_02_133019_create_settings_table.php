@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
+            $table->string('key')->unique();
+            $table->text('value')->nullable();
+            $table->string('type')->default('string');
+            $table->string('group_name')->default('general');
+            $table->boolean('autoload')->default(true);
             $table->timestamps();
         });
     }

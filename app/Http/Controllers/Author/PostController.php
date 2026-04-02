@@ -3,63 +3,68 @@
 namespace App\Http\Controllers\Author;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Author\StorePostRequest;
+use App\Http\Requests\Author\UpdatePostRequest;
+use App\Models\Category;
+use App\Models\Post;
+use App\Models\Tag;
+use App\Services\PostService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class PostController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(private PostService $postService) {}
+
+    public function index(): View
     {
-        //
+        $posts = auth()->user()
+            ->posts()
+            ->with(['category', 'tags'])
+            ->latest()
+            ->paginate(10);
+
+        return view('author.posts.index', compact('posts'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): View
     {
-        //
+        $categories = Category::where('is_active', true)->get();
+        $tags = Tag::all();
+
+        return view('author.posts.create', compact('categories', 'tags'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StorePostRequest $request): RedirectResponse
     {
-        //
+        $post = $this->postService->createPost($request->validated(), auth()->user());
+
+        return redirect()
+            ->route('author.posts.edit', $post)
+            ->with('success', 'Post created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit(Post $post): View
     {
-        //
+        abort_unless($post->user_id === auth()->id(), 403);
+
+        $categories = Category::where('is_active', true)->get();
+        $tags = Tag::all();
+
+        return view('author.posts.edit', compact('post', 'categories', 'tags'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(UpdatePostRequest $request, Post $post): RedirectResponse
     {
-        //
+        $this->postService->updateDraft($post, $request->validated(), auth()->user());
+
+        return back()->with('success', 'Post updated successfully.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function submit(Post $post): RedirectResponse
     {
-        //
-    }
+        $this->postService->submitForReview($post, auth()->user());
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return back()->with('success', 'Post submitted for review.');
     }
 }

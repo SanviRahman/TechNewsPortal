@@ -1,20 +1,130 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Author\PostController as AuthorPostController;
+use App\Http\Controllers\Editor\PostReviewController;
+use App\Http\Controllers\Front\BlogController;
+use App\Http\Controllers\Front\CommentController;
+use App\Http\Controllers\Front\HomeController;
+use App\Http\Controllers\Front\LikeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
+
+/*
+|--------------------------------------------------------------------------
+| Dashboard
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Authenticated User Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profile Routes
+    |--------------------------------------------------------------------------
+    */
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+/*
+|--------------------------------------------------------------------------
+| Blog System Protected Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'active'])->group(function () {
+
+    Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])
+        ->middleware('permission:posts.like')
+        ->name('posts.like');
+
+    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
+        ->middleware('permission:comments.create')
+        ->name('comments.store');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Author Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('author')->name('author.')->middleware('role:Author')->group(function () {
+        Route::resource('posts', AuthorPostController::class);
+
+        Route::post('posts/{post}/submit', [AuthorPostController::class, 'submit'])
+            ->middleware('permission:posts.submit')
+            ->name('posts.submit');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Editor Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('editor')->name('editor.')->middleware('role:Editor|Super Admin')->group(function () {
+
+        Route::get('reviews', [PostReviewController::class, 'index'])->name('reviews.index');
+        Route::get('reviews/{post}', [PostReviewController::class, 'show'])->name('reviews.show');
+
+        Route::post('reviews/{post}/approve', [PostReviewController::class, 'approve'])
+            ->middleware('permission:posts.approve')
+            ->name('reviews.approve');
+
+        Route::post('reviews/{post}/reject', [PostReviewController::class, 'reject'])
+            ->middleware('permission:posts.review')
+            ->name('reviews.reject');
+
+        Route::post('reviews/{post}/publish', [PostReviewController::class, 'publish'])
+            ->middleware('permission:posts.publish')
+            ->name('reviews.publish');
+
+        Route::resource('categories', CategoryController::class)
+            ->middleware('permission:categories.manage');
+
+        Route::resource('tags', TagController::class)
+            ->middleware('permission:tags.manage');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('admin')->name('admin.')->middleware('role:Super Admin')->group(function () {
+        Route::resource('users', UserController::class);
+
+        // roles, permissions, settings routes
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Auth Routes
+|--------------------------------------------------------------------------
+*/
+
+require __DIR__.'/auth.php';                                       
