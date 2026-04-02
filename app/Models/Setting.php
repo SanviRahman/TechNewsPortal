@@ -24,12 +24,6 @@ class Setting extends Model
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Accessors (Auto Type Casting)
-    |--------------------------------------------------------------------------
-    */
-
     public function getValueAttribute($value)
     {
         return match ($this->type) {
@@ -49,12 +43,6 @@ class Setting extends Model
             $this->attributes['value'] = $value;
         }
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Scopes
-    |--------------------------------------------------------------------------
-    */
 
     public function scopeGroup($query, string $group)
     {
