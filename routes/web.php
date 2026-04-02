@@ -3,7 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\TagController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Author\PostController as AuthorPostController;
 use App\Http\Controllers\Editor\PostReviewController;
 use App\Http\Controllers\Front\BlogController;
@@ -11,6 +10,10 @@ use App\Http\Controllers\Front\CommentController;
 use App\Http\Controllers\Front\HomeController;
 use App\Http\Controllers\Front\LikeController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -114,10 +117,15 @@ Route::middleware(['auth', 'active'])->group(function () {
     | Admin Routes
     |--------------------------------------------------------------------------
     */
-    Route::prefix('admin')->name('admin.')->middleware('role:Super Admin')->group(function () {
+   Route::middleware(['auth', 'active', 'role:Super Admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
         Route::resource('users', UserController::class);
-
-        // roles, permissions, settings routes
+        Route::resource('roles', RoleController::class);
+        Route::resource('permissions', PermissionController::class);
+        Route::resource('categories', CategoryController::class);
+        Route::resource('tags', TagController::class);
     });
 });
 
