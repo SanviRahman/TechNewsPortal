@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -21,6 +22,7 @@ class RolePermissionSeeder extends Seeder
             'users.delete',
             'roles.manage',
             'permissions.manage',
+
             'posts.view',
             'posts.create',
             'posts.edit.own',
@@ -32,11 +34,14 @@ class RolePermissionSeeder extends Seeder
             'posts.approve',
             'posts.publish',
             'posts.unpublish',
+
             'categories.manage',
             'tags.manage',
+
             'comments.create',
             'comments.moderate',
             'comments.delete',
+
             'settings.manage',
             'posts.like',
         ];
@@ -48,14 +53,29 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
-        $superAdmin = Role::firstOrCreate(['name' => 'Super Admin', 'guard_name' => 'web']);
-        $editor = Role::firstOrCreate(['name' => 'Editor', 'guard_name' => 'web']);
-        $author = Role::firstOrCreate(['name' => 'Author', 'guard_name' => 'web']);
-        $reader = Role::firstOrCreate(['name' => 'Reader', 'guard_name' => 'web']);
+        $superAdminRole = Role::firstOrCreate([
+            'name' => 'Super Admin',
+            'guard_name' => 'web',
+        ]);
 
-        $superAdmin->givePermissionTo(Permission::all());
+        $editorRole = Role::firstOrCreate([
+            'name' => 'Editor',
+            'guard_name' => 'web',
+        ]);
 
-        $editor->givePermissionTo([
+        $authorRole = Role::firstOrCreate([
+            'name' => 'Author',
+            'guard_name' => 'web',
+        ]);
+
+        $readerRole = Role::firstOrCreate([
+            'name' => 'Reader',
+            'guard_name' => 'web',
+        ]);
+
+        $superAdminRole->syncPermissions(Permission::all());
+
+        $editorRole->syncPermissions([
             'posts.view',
             'posts.edit.any',
             'posts.review',
@@ -67,7 +87,7 @@ class RolePermissionSeeder extends Seeder
             'comments.delete',
         ]);
 
-        $author->givePermissionTo([
+        $authorRole->syncPermissions([
             'posts.view',
             'posts.create',
             'posts.edit.own',
@@ -75,21 +95,58 @@ class RolePermissionSeeder extends Seeder
             'posts.submit',
         ]);
 
-        $reader->givePermissionTo([
+        $readerRole->syncPermissions([
             'posts.like',
             'comments.create',
         ]);
 
-        $adminUser = User::firstOrCreate(
+        $superAdmin = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Super Admin',
-                'password' => bcrypt('password'),
+                'username' => 'superadmin',
+                'password' => Hash::make('password'),
                 'status' => 'active',
+                'email_verified_at' => now(),
             ]
         );
+        $superAdmin->assignRole('Super Admin');
 
-        $adminUser->assignRole('Super Admin');
+        $editor = User::firstOrCreate(
+            ['email' => 'editor@example.com'],
+            [
+                'name' => 'Editor User',
+                'username' => 'editor',
+                'password' => Hash::make('password'),
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]
+        );
+        $editor->assignRole('Editor');
+
+        $author = User::firstOrCreate(
+            ['email' => 'author@example.com'],
+            [
+                'name' => 'Author User',
+                'username' => 'author',
+                'password' => Hash::make('password'),
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]
+        );
+        $author->assignRole('Author');
+
+        $reader = User::firstOrCreate(
+            ['email' => 'reader@example.com'],
+            [
+                'name' => 'Reader User',
+                'username' => 'reader',
+                'password' => Hash::make('password'),
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]
+        );
+        $reader->assignRole('Reader');
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
