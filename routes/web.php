@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -8,27 +8,28 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\PermissionController;
 
 // Front
-use App\Http\Controllers\Front\HomeController;
-use App\Http\Controllers\Front\BlogController;
-use App\Http\Controllers\Front\CommentController;
-use App\Http\Controllers\Front\LikeController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\UserController;
 
 // Author
 use App\Http\Controllers\Author\PostController as AuthorPostController;
 
 // Editor
+use App\Http\Controllers\Editor\CommentController as EditorCommentController;
 use App\Http\Controllers\Editor\PostReviewController;
 
 // Admin
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\PermissionController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\TagController;
-use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Front\BlogController;
+use App\Http\Controllers\Front\CommentController;
+use App\Http\Controllers\Front\HomeController;
+use App\Http\Controllers\Front\LikeController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,6 +112,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->middleware('role:Editor|Super Admin')
         ->group(function () {
 
+            // ✅ Post Review Routes
             Route::get('reviews', [PostReviewController::class, 'index'])->name('reviews.index');
             Route::get('reviews/{post}', [PostReviewController::class, 'show'])->name('reviews.show');
 
@@ -131,6 +133,27 @@ Route::middleware(['auth', 'active'])->group(function () {
 
             Route::resource('tags', TagController::class)
                 ->middleware('permission:tags.manage');
+
+            // ✅ Comment Moderation Routes
+            Route::get('comments', [EditorCommentController::class, 'index'])
+                ->middleware('permission:comments.moderate')
+                ->name('comments.index');
+
+            Route::get('comments/{comment}', [EditorCommentController::class, 'show'])
+                ->middleware('permission:comments.moderate')
+                ->name('comments.show');
+
+            Route::post('comments/{comment}/approve', [EditorCommentController::class, 'approve'])
+                ->middleware('permission:comments.moderate')
+                ->name('comments.approve');
+
+            Route::post('comments/{comment}/reject', [EditorCommentController::class, 'reject'])
+                ->middleware('permission:comments.moderate')
+                ->name('comments.reject');
+
+            Route::delete('comments/{comment}', [EditorCommentController::class, 'destroy'])
+                ->middleware('permission:comments.delete')
+                ->name('comments.destroy');
         });
 
     /*
