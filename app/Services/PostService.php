@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\Post;
@@ -24,12 +23,12 @@ class PostService
             unset($data['tag_ids']);
 
             $post = Post::create([
-                ...$data,
+                 ...$data,
                 'user_id' => $author->id,
-                'status' => 'draft',
+                'status'  => 'draft',
             ]);
 
-            if (!empty($tagIds)) {
+            if (! empty($tagIds)) {
                 $post->tags()->sync($tagIds);
             }
 
@@ -39,15 +38,15 @@ class PostService
 
     public function updateDraft(Post $post, array $data, User $user): Post
     {
-        if ($post->user_id !== $user->id && !$user->can('posts.edit.any')) {
+        if ($post->user_id !== $user->id && ! $user->can('posts.edit.any')) {
             throw ValidationException::withMessages([
                 'authorization' => 'You are not allowed to edit this post.',
             ]);
         }
 
-        if (in_array($post->status, ['published', 'approved']) && !$user->can('posts.edit.any')) {
+        if ($post->status === 'published' && ! $user->can('posts.edit.any')) {
             throw ValidationException::withMessages([
-                'status' => 'You cannot edit this post in its current state.',
+                'status' => 'You cannot edit a published post.',
             ]);
         }
 
@@ -88,7 +87,7 @@ class PostService
         }
 
         $post->update([
-            'status' => 'pending_review',
+            'status'       => 'pending_review',
             'submitted_at' => now(),
         ]);
 
@@ -97,7 +96,7 @@ class PostService
 
     public function approve(Post $post, User $editor, ?string $reviewNotes = null): Post
     {
-        if (!$editor->can('posts.approve')) {
+        if (! $editor->can('posts.approve')) {
             throw ValidationException::withMessages([
                 'authorization' => 'You are not allowed to approve posts.',
             ]);
@@ -110,9 +109,9 @@ class PostService
         }
 
         $post->update([
-            'status' => 'approved',
-            'approved_at' => now(),
-            'editor_id' => $editor->id,
+            'status'       => 'approved',
+            'approved_at'  => now(),
+            'editor_id'    => $editor->id,
             'review_notes' => $reviewNotes,
         ]);
 
@@ -121,7 +120,7 @@ class PostService
 
     public function reject(Post $post, User $editor, ?string $reviewNotes = null): Post
     {
-        if (!$editor->can('posts.review')) {
+        if (! $editor->can('posts.review')) {
             throw ValidationException::withMessages([
                 'authorization' => 'You are not allowed to review posts.',
             ]);
@@ -134,8 +133,8 @@ class PostService
         }
 
         $post->update([
-            'status' => 'rejected',
-            'editor_id' => $editor->id,
+            'status'       => 'rejected',
+            'editor_id'    => $editor->id,
             'review_notes' => $reviewNotes,
         ]);
 
@@ -144,22 +143,22 @@ class PostService
 
     public function publish(Post $post, User $editor): Post
     {
-        if (!$editor->can('posts.publish')) {
+        if (! $editor->can('posts.publish')) {
             throw ValidationException::withMessages([
                 'authorization' => 'You are not allowed to publish posts.',
             ]);
         }
 
-        if (!in_array($post->status, ['approved', 'published'])) {
+        if (! in_array($post->status, ['approved', 'published'])) {
             throw ValidationException::withMessages([
                 'status' => 'Only approved posts can be published.',
             ]);
         }
 
         $post->update([
-            'status' => 'published',
+            'status'       => 'published',
             'published_at' => now(),
-            'editor_id' => $editor->id,
+            'editor_id'    => $editor->id,
         ]);
 
         return $post->fresh();

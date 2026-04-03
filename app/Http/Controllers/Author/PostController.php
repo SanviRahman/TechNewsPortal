@@ -18,9 +18,12 @@ class PostController extends Controller
 
     public function index(): View
     {
-        $posts = auth()->user()
-            ->posts()
-            ->with(['category', 'tags'])
+        $user = auth()->user();
+
+        $posts = Post::with(['author', 'category', 'tags'])
+            ->when(!$user->hasRole('Super Admin'), function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
             ->latest()
             ->paginate(10);
 
@@ -46,7 +49,12 @@ class PostController extends Controller
 
     public function edit(Post $post): View
     {
-        abort_unless($post->user_id === auth()->id(), 403);
+        $user = auth()->user();
+
+        abort_unless(
+            $user->hasRole('Super Admin') || $post->user_id === $user->id,
+            403
+        );
 
         $categories = Category::where('is_active', true)->get();
         $tags = Tag::all();
@@ -56,15 +64,52 @@ class PostController extends Controller
 
     public function update(UpdatePostRequest $request, Post $post): RedirectResponse
     {
-        $this->postService->updateDraft($post, $request->validated(), auth()->user());
+        $user = auth()->user();
+
+        abort_unless(
+            $user->hasRole('Super Admin') || $post->user_id === $user->id,
+            403
+        );
+
+        $this->postService->updateDraft($post, $request->validated(), $user);
 
         return back()->with('success', 'Post updated successfully.');
     }
 
     public function submit(Post $post): RedirectResponse
     {
-        $this->postService->submitForReview($post, auth()->user());
+        $user = auth()->user();
+
+        abort_unless(
+            $user->hasRole('Super Admin') || $post->user_id === $user->id,
+            403
+        );
+
+        $this->postService->submitForReview($post, $user);
 
         return back()->with('success', 'Post submitted for review.');
+    }
+
+    public function destroy(Post $post): RedirectResponse
+    {
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Admin') || $user->can('posts.delete.any')) {
+            $post->delete();
+
+            return redirect()
+                ->route('author.posts.index')
+                ->with('success', 'Post deleted successfully.');
+        }
+
+        if ($user->can('posts.delete.own') && $post->user_id === $user->id) {
+            $post->delete();
+
+            return redirect()
+                ->route('author.posts.index')
+                ->with('success', 'Post deleted successfully.');
+        }
+
+        abort(403, 'You are not allowed to delete this post.');
     }
 }

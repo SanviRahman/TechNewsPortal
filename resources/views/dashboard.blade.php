@@ -46,53 +46,61 @@
 
                             {{-- Author --}}
                             @role('Author')
-                                <div class="col-md-4">
-                                    <a href="{{ route('author.posts.index') }}" class="btn btn-outline-dark w-100">
-                                        My Posts
-                                    </a>
-                                </div>
+                            <div class="col-md-4">
+                                <a href="{{ route('author.posts.index') }}" class="btn btn-outline-dark w-100">
+                                    My Posts
+                                </a>
+                            </div>
 
-                                <div class="col-md-4">
-                                    <a href="{{ route('author.posts.create') }}" class="btn btn-outline-success w-100">
-                                        Create Post
-                                    </a>
-                                </div>
+                            <div class="col-md-4">
+                                <a href="{{ route('author.posts.create') }}" class="btn btn-outline-success w-100">
+                                    Create Post
+                                </a>
+                            </div>
                             @endrole
 
                             {{-- Editor --}}
                             @role('Editor|Super Admin')
-                                <div class="col-md-4">
-                                    <a href="{{ route('editor.reviews.index') }}" class="btn btn-outline-warning w-100">
-                                        Review Posts
-                                    </a>
-                                </div>
+                            <div class="col-md-4">
+                                <a href="{{ route('editor.reviews.index') }}" class="btn btn-outline-warning w-100">
+                                    Review Posts
+                                </a>
+                            </div>
 
-                                <div class="col-md-4">
-                                    <a href="{{ route('editor.comments.index') }}" class="btn btn-outline-info w-100">
-                                        Moderate Comments
-                                    </a>
-                                </div>
+                            <div class="col-md-4">
+                                <a href="{{ route('editor.comments.index') }}" class="btn btn-outline-info w-100">
+                                    Moderate Comments
+                                </a>
+                            </div>
                             @endrole
 
                             {{-- Super Admin --}}
                             @role('Super Admin')
-                                <div class="col-md-4">
-                                    <a href="{{ route('admin.users.index') }}" class="btn btn-outline-primary w-100">
-                                        Manage Users
-                                    </a>
-                                </div>
+                            <div class="col-md-4">
+                                <a href="{{ route('admin.users.index') }}" class="btn btn-outline-primary w-100">
+                                    Manage Users
+                                </a>
+                            </div>
 
-                                <div class="col-md-4">
-                                    <a href="{{ route('admin.roles.index') }}" class="btn btn-outline-secondary w-100">
-                                        Manage Roles
-                                    </a>
-                                </div>
+                            <div class="col-md-4">
+                                <a href="{{ route('admin.roles.index') }}" class="btn btn-outline-secondary w-100">
+                                    Manage Roles
+                                </a>
+                            </div>
 
-                                <div class="col-md-4">
-                                    <a href="{{ route('admin.settings.index') }}" class="btn btn-outline-dark w-100">
-                                        Site Settings
-                                    </a>
-                                </div>
+                            <div class="col-md-4">
+                                <a href="{{ route('admin.settings.index') }}" class="btn btn-outline-dark w-100">
+                                    Site Settings
+                                </a>
+                            </div>
+                            @endrole
+
+                            @role('Super Admin')
+                            <div class="col-md-4">
+                                <a href="{{ route('author.posts.index') }}" class="btn btn-outline-danger w-100">
+                                    Manage All Posts
+                                </a>
+                            </div>
                             @endrole
 
                         </div>
@@ -109,7 +117,7 @@
                     <div class="card-body text-center">
                         <h5 class="fw-bold">Welcome, {{ auth()->user()->name }} 👋</h5>
                         <p class="text-muted mb-0">
-                            You are logged in as 
+                            You are logged in as
                             <strong>{{ auth()->user()->roles->pluck('name')->join(', ') }}</strong>.
                         </p>
                     </div>

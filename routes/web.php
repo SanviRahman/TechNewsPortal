@@ -92,7 +92,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     */
     Route::prefix('author')
         ->name('author.')
-        ->middleware('role:Author')
+        ->middleware('role:Author|Super Admin')
         ->group(function () {
 
             Route::resource('posts', AuthorPostController::class);

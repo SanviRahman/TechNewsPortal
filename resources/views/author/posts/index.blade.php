@@ -24,28 +24,40 @@
                         </thead>
                         <tbody>
                             @forelse ($posts as $post)
-                                <tr>
-                                    <td class="fw-semibold">{{ $post->title }}</td>
-                                    <td>{{ $post->category->name ?? '-' }}</td>
-                                    <td>
-                                        <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $post->status)) }}</span>
-                                    </td>
-                                    <td>{{ $post->created_at->format('d M Y') }}</td>
-                                    <td class="text-end">
-                                        <a href="{{ route('author.posts.edit', $post) }}" class="btn btn-warning btn-sm">Edit</a>
+                            <tr>
+                                <td class="fw-semibold">{{ $post->title }}</td>
+                                <td>{{ $post->category->name ?? '-' }}</td>
+                                <td>
+                                    <span
+                                        class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $post->status)) }}</span>
+                                </td>
+                                <td>{{ $post->created_at->format('d M Y') }}</td>
+                                <td class="text-end">
+                                    <a href="{{ route('author.posts.edit', $post) }}"
+                                        class="btn btn-warning btn-sm">Edit</a>
 
-                                        @if ($post->status === 'draft')
-                                            <form action="{{ route('author.posts.submit', $post) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-success btn-sm">Submit</button>
-                                            </form>
-                                        @endif
-                                    </td>
-                                </tr>
+                                    @if(auth()->user()->hasRole('Super Admin') || auth()->id() === $post->user_id)
+                                    <form action="{{ route('author.posts.destroy', $post) }}" method="POST"
+                                        class="d-inline" onsubmit="return confirm('Delete this post?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                    @endif
+
+                                    @if ($post->status === 'draft')
+                                    <form action="{{ route('author.posts.submit', $post) }}" method="POST"
+                                        class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success btn-sm">Submit</button>
+                                    </form>
+                                    @endif
+                                </td>
+                            </tr>
                             @empty
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">No posts found.</td>
-                                </tr>
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No posts found.</td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
