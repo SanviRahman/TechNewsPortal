@@ -35,7 +35,7 @@ class PostController extends Controller
         $categories = Category::where('is_active', true)->get();
         $tags = Tag::all();
 
-        return view('author.posts.create', compact('categories', 'tags'));
+        return view('author.posts.index', compact('categories', 'tags'));
     }
 
     public function store(StorePostRequest $request): RedirectResponse
@@ -43,7 +43,7 @@ class PostController extends Controller
         $post = $this->postService->createPost($request->validated(), auth()->user());
 
         return redirect()
-            ->route('author.posts.edit', $post)
+            ->route('author.posts.index', $post)
             ->with('success', 'Post created successfully.');
     }
 
